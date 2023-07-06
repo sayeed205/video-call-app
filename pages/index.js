@@ -42,6 +42,7 @@ export default function Home() {
 
     return (
         <div className='flex flex-col w-48 gap-3 '>
+            {code && <p>Unique Code: {code}</p>}
             <button
                 onClick={handleCreateCall}
                 className='p-2 bg-blue-500 rounded-3xl'
@@ -61,3 +62,18 @@ export default function Home() {
 function generateUniqueCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
+/*<div className='flex flex-col w-48 gap-3 '>
+            <button
+                onClick={handleCreateCall}
+                className='p-2 bg-blue-500 rounded-3xl'
+            >
+                Create Call
+            </button>
+            <button
+                onClick={handleJoinCall}
+                className='p-2 bg-blue-500 rounded-3xl'
+            >
+                Join Call
+            </button>
+        </div>
+        */
