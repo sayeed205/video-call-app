@@ -26,7 +26,7 @@ export default function Home() {
 
             // Wait for the code state to update before proceeding with validation
             setTimeout(() => {
-                if (inputCode === code) {
+                if (inputCode === codeRef.current) {
                     navigator.mediaDevices
                         .getUserMedia({ video: true, audio: true })
                         .then(() => {
@@ -44,6 +44,12 @@ export default function Home() {
             }, 100);
         }
     };
+
+    const codeRef = useRef(code); // Use a ref to track the code state
+
+    useEffect(() => {
+        codeRef.current = code; // Update the ref when the code state changes
+    }, [code]);
 
     return (
         <div className='flex flex-col w-48 gap-3 '>

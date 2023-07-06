@@ -6,61 +6,49 @@ export default function Call() {
     const videoRef = useRef();
     const remoteVideoRef = useRef();
     const code = router.query.code;
+    const peerConnectionRef = useRef(null);
 
     useEffect(() => {
-        const videoStream = navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: true,
-        });
+        const initializePeerConnection = async () => {
+            const videoStream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true,
+            });
+            videoRef.current.srcObject = videoStream;
 
-        videoStream.then(stream => {
-            videoRef.current.srcObject = stream;
-        });
+            const configuration = {
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+            };
+            const peerConnection = new RTCPeerConnection(configuration);
+            peerConnectionRef.current = peerConnection;
+
+            videoStream
+                .getTracks()
+                .forEach(track => peerConnection.addTrack(track, videoStream));
+
+            peerConnection.ontrack = event => {
+                remoteVideoRef.current.srcObject = event.streams[0];
+            };
+
+            peerConnection.onicecandidate = event => {
+                if (event.candidate) {
+                    // Send the candidate to the other peer
+                }
+            };
+
+            // Create and send an offer to the other peer
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+
+            // Send the offer to the other peer
+        };
+
+        initializePeerConnection();
 
         return () => {
-            videoStream.then(stream => {
-                stream.getTracks().forEach(track => track.stop());
-            });
-        };
-    }, []);
-
-    useEffect(() => {
-        const peerConnection = new RTCPeerConnection();
-
-        navigator.mediaDevices
-            .getUserMedia({ video: true, audio: true })
-            .then(stream => {
-                stream
-                    .getTracks()
-                    .forEach(track => peerConnection.addTrack(track, stream));
-            })
-            .catch(error => {
-                console.error('Error accessing camera and microphone:', error);
-            });
-
-        peerConnection.ontrack = event => {
-            remoteVideoRef.current.srcObject = event.streams[0];
-        };
-
-        peerConnection.onicecandidate = event => {
-            if (event.candidate) {
-                // Send the candidate to the other peer
+            if (peerConnectionRef.current) {
+                peerConnectionRef.current.close();
             }
-        };
-
-        // Create and send an offer to the other peer
-        peerConnection.createOffer().then(offer => {
-            peerConnection.setLocalDescription(offer).then(() => {
-                // Send the offer to the other peer
-            });
-        });
-
-        // Handle the answer from the other peer
-        // peerConnection.setRemoteDescription(answer);
-
-        return () => {
-            // Close the connection and stop the tracks
-            peerConnection.close();
         };
     }, []);
 
