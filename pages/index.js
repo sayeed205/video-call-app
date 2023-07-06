@@ -22,21 +22,26 @@ export default function Home() {
     const handleJoinCall = () => {
         const inputCode = prompt('Enter the unique code:');
         if (inputCode) {
-            if (inputCode === code) {
-                navigator.mediaDevices
-                    .getUserMedia({ video: true, audio: true })
-                    .then(() => {
-                        router.push(`/call/${inputCode}`);
-                    })
-                    .catch(error => {
-                        console.error(
-                            'Error accessing camera and microphone:',
-                            error
-                        );
-                    });
-            } else {
-                alert('Call is not available. Invalid code.');
-            }
+            setCode(inputCode); // Update the code state immediately
+
+            // Wait for the code state to update before proceeding with validation
+            setTimeout(() => {
+                if (inputCode === code) {
+                    navigator.mediaDevices
+                        .getUserMedia({ video: true, audio: true })
+                        .then(() => {
+                            router.push(`/call/${inputCode}`);
+                        })
+                        .catch(error => {
+                            console.error(
+                                'Error accessing camera and microphone:',
+                                error
+                            );
+                        });
+                } else {
+                    alert('Call is not available. Invalid code.');
+                }
+            }, 100);
         }
     };
 
@@ -62,6 +67,7 @@ export default function Home() {
 function generateUniqueCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
+
 /*<div className='flex flex-col w-48 gap-3 '>
             <button
                 onClick={handleCreateCall}
